@@ -34,6 +34,13 @@ class AlexaClient:
         self.establish_downchannel_stream()
         self.synchronise_device_state()
         self.ping_manager.start()
+        return self
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, ex_type, ex_value, trace):
+        self.ping_manager.cancel()
 
     def conditional_ping(self):
         warnings.warn('Deprecated. Removing in v2.0.0.', DeprecationWarning)
@@ -49,6 +56,16 @@ class AlexaClient:
             return self.connection_manager.synchronise_device_state(
                 authentication_headers=headers,
                 device_state=self.device_manager.get_device_state(),
+            )
+
+    def send_locales_changed(self, locales):
+        if isinstance(locales, str):
+            locales = [locales]
+        with self.ping_manager.update_ping_deadline():
+            headers = self.authentication_manager.get_headers()
+            return self.connection_manager.send_locales_changed(
+                authentication_headers=headers,
+                locales=locales,
             )
 
     def send_audio_file(

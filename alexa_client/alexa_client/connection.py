@@ -75,6 +75,56 @@ class ConnectionManager:
         response = self.connection.get_response(stream_id)
         assert response.status in (http.client.NO_CONTENT, http.client.OK)
 
+    def send_locales_changed(self, locales, authentication_headers):
+        """
+        LocalesChanged
+        The device sends the LocalesChanged event when it initiates a locale change.
+        Such changes include those triggered by peripherals, such as third-party
+        companion apps that instruct the device to change its locale(s) without
+        otherwise informing Alexa directly.
+
+        For locale changes initiated by Alexa via the SetLocales directive,
+        the LocalesReport event must be sent instead.
+        """
+
+        payload = {
+            'event': {
+                'header': {
+                    'namespace': 'System',
+                    'name': 'LocalesChanged',
+                    'messageId': self.generate_message_id(),
+                },
+                'payload': {
+                    'locales': locales
+                }
+            }
+        }
+        multipart_data = MultipartEncoder(
+            fields=[
+                (
+                    'metadata', (
+                        'metadata',
+                        json.dumps(payload),
+                        'application/json',
+                        {'Content-Disposition': "form-data; name='metadata'"}
+                    )
+                ),
+            ],
+            boundary='boundary'
+        )
+        headers = {
+            **authentication_headers,
+            'Content-Type': multipart_data.content_type
+        }
+        stream_id = self.connection.request(
+            'POST',
+            '/v20160207/events',
+            body=multipart_data,
+            headers=headers,
+        )
+        response = self.connection.get_response(stream_id)
+        assert response.status in (http.client.NO_CONTENT, http.client.OK)
+
     def send_audio_file(
         self, audio_file, device_state, authentication_headers,
         dialog_request_id, distance_profile, audio_format
