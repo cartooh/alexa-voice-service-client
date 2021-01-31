@@ -204,6 +204,17 @@ On completion Amazon will return your `refresh_token` - which you will require t
 ## Steaming audio to AVS
 `AlexaClient.send_audio_file` streaming uploads a file-like object to AVS for great latency. The file-like object can be an actual file on your filesystem, an in-memory BytesIo buffer containing audio from your microphone, or even audio streaming from [your browser over a websocket in real-time](https://github.com/richtier/alexa-browser-client).
 
+## Change Locales
+reference: [localeschanged](https://developer.amazon.com/en-US/docs/alexa/alexa-voice-service/system.html#localeschanged)
+
+```sh
+python -m alexa_client.demo.change_locales \
+    --device-type-id="{enter-device-type-id-here}" \
+    --client-id="{enter-client-id-here}" \
+    --client-secret="{enter-client-secret-here}" \
+    --locales ja-JP
+```
+
 ## Persistent AVS connection
 
 Calling `AlexaClient.connect` creates a persistent connection to AVS. A thread runs that pings AVS after 4 minutes of no request being made to AVS. This prevents the connection getting forcefully closed due to inactivity.
